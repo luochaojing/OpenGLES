@@ -20,16 +20,9 @@ using namespace std;
 // Function prototypes
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode);
 
+GLFWwindow *createWindow();
 // Window dimensions
 const GLuint WIDTH = 800, HEIGHT = 600;
-
-void drawRantangle();
-
-GLfloat vertices[] = {
-    -0.5f, -0.5f, 0.0f,
-     0.5f, -0.5f, 0.0f,
-     0.0f,  0.5f, 0.0f
-};
 
 const GLchar* vertexShaderSource = "#version 330 core\n"
 "layout (location = 0) in vec3 position;\n"
@@ -47,54 +40,10 @@ const GLchar* fragmentShaderSource = "#version 330 core\n"
 
 
 // The MAIN function, from here we start the application and run the game loop
-int main()
-{
+int main() {
     
-    std::cout << "Starting GLFW context, OpenGL 3.3" << std::endl;
-    // Init GLFW
-    if (!glfwInit()) {
-        std::cout << "glfwInit fialed" << endl;
-        return -1;
-    }
-    // Set all the required options for GLFW
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
-
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-    glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
-
-#if __APPLE__
-    // 在mac上做了兼容:https://github.com/ocornut/imgui/pull/229/commits/6ee65fc5afb6a0f14c88ec3d693d5fc8a2fcfb52
-    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-#endif
     // Create a GLFWwindow object that we can use for GLFW's functions
-    GLFWwindow* window = glfwCreateWindow(WIDTH, HEIGHT, "LearnOpenGL", nullptr, nullptr);
-    if (window == nullptr)
-    {
-        const char *error;
-        glfwGetError(&error);
-        std::cout << "Failed to create GLFW window:" << error << std::endl;
-        glfwTerminate();
-        return -1;
-    }
-    glfwMakeContextCurrent(window);
-    // Set the required callback functions
-    glfwSetKeyCallback(window, key_callback);
-
-    // Set this to true so GLEW knows to use a modern approach to retrieving function pointers and extensions
-    glewExperimental = GL_TRUE;
-    // Initialize GLEW to setup the OpenGL Function pointers
-    if (glewInit() != GLEW_OK)
-    {
-        std::cout << "Failed to initialize GLEW" << std::endl;
-        return -1;
-    }
-    
-
-    // Define the viewport dimensions
-    int width, height;
-    glfwGetFramebufferSize(window, &width, &height);
-    glViewport(0, 0, width, height);
+    GLFWwindow* window = createWindow();// glfwCreateWindow(WIDTH, HEIGHT, "LearnOpenGL", nullptr, nullptr);
 
     GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
     glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
@@ -185,9 +134,6 @@ int main()
         
         // Swap the screen buffers
         glfwSwapBuffers(window);
-        static int loopTime = 0;
-        loopTime++;
-        std::cout << "循环" << loopTime << std::endl;
     }
 
     // Properly de-allocate all resources once they've outlived their purpose
@@ -208,11 +154,53 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
         glfwSetWindowShouldClose(window, GL_TRUE);
 }
 
-void drawRantangle() {
-    GLuint VBO;
-    glGenBuffers(1, &VBO);
+GLFWwindow *createWindow() {
+    std::cout << "Starting GLFW context, OpenGL 3.3" << std::endl;
+    // Init GLFW
+    if (!glfwInit()) {
+        std::cout << "glfwInit fialed" << endl;
+        return nullptr;
+    }
+    // Set all the required options for GLFW
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
     
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
+    
+#if __APPLE__
+    // 在mac上做了兼容:https://github.com/ocornut/imgui/pull/229/commits/6ee65fc5afb6a0f14c88ec3d693d5fc8a2fcfb52
+    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+#endif
+    
+    // Create a GLFWwindow object that we can use for GLFW's functions
+    GLFWwindow* window = glfwCreateWindow(WIDTH, HEIGHT, "LearnOpenGL", nullptr, nullptr);
+    
+    if (window == nullptr) {
+        const char *error;
+        glfwGetError(&error);
+        std::cout << "Failed to create GLFW window:" << error << std::endl;
+        glfwTerminate();
+        return nullptr;
+    }
+    
+    glfwMakeContextCurrent(window);
+    // Set the required callback functions
+    glfwSetKeyCallback(window, key_callback);
 
+    // Set this to true so GLEW knows to use a modern approach to retrieving function pointers and extensions
+    glewExperimental = GL_TRUE;
+    // Initialize GLEW to setup the OpenGL Function pointers
+    if (glewInit() != GLEW_OK) {
+        std::cout << "Failed to initialize GLEW" << std::endl;
+        return nullptr;
+    }
+    
+
+    // Define the viewport dimensions
+    int width, height;
+    glfwGetFramebufferSize(window, &width, &height);
+    glViewport(0, 0, width, height);
+    
+    return window;
 }
