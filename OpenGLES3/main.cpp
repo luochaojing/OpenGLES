@@ -42,29 +42,30 @@ const GLchar* fragmentShaderSource = "#version 330 core\n"
 // The MAIN function, from here we start the application and run the game loop
 int main() {
     
-    // Create a GLFWwindow object that we can use for GLFW's functions
-    GLFWwindow* window = createWindow();// glfwCreateWindow(WIDTH, HEIGHT, "LearnOpenGL", nullptr, nullptr);
+    // 创建窗口
+    GLFWwindow* window = createWindow();
 
+    // 创建一个顶点着色器，并返回一个句柄
     GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
+    // (GLuint shader, GLsizei count, const GLchar *const* string, const GLint* length);
     glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
     glCompileShader(vertexShader);
     // Check for compile time errors
     GLint success;
     GLchar infoLog[512];
     glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
-    if (!success)
-    {
+    if (!success) {
         glGetShaderInfoLog(vertexShader, 512, NULL, infoLog);
         std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << infoLog << std::endl;
     }
+    
     // Fragment shader
     GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
     glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
     glCompileShader(fragmentShader);
     // Check for compile time errors
     glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
-    if (!success)
-    {
+    if (!success) {
         glGetShaderInfoLog(fragmentShader, 512, NULL, infoLog);
         std::cout << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n" << infoLog << std::endl;
     }
@@ -80,23 +81,25 @@ int main() {
         glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);
         std::cout << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n" << infoLog << std::endl;
     }
+    // 链接之后，就可以删除了。应该是拷贝了一份？
     glDeleteShader(vertexShader);
     glDeleteShader(fragmentShader);
     
+    // 三维坐标，(x, y, z): 下面是一个长方形的四个角的坐标
     GLfloat vertices[] = {
          0.5f,  0.5f, 0.0f,  // Top Right
          0.5f, -0.5f, 0.0f,  // Bottom Right
         -0.5f, -0.5f, 0.0f,  // Bottom Left
         -0.5f,  0.5f, 0.0f   // Top Left
     };
-    GLuint indices[] = {  // Note that we start from 0!
+    GLuint indices[] = {  // Note that we start from 0! indices: 目录
         0, 1, 3,  // First Triangle
         1, 2, 3   // Second Triangle
     };
-    GLuint VBO, VAO, EBO;
-    glGenVertexArrays(1, &VAO);
-    glGenBuffers(1, &VBO);
-    glGenBuffers(1, &EBO);
+    GLuint VAO, VBO, EBO;
+    glGenVertexArrays(1, &VAO); // VAO: vertex array obj
+    glGenBuffers(1, &VBO);      // VBO: vertex buffer obj
+    glGenBuffers(1, &EBO);      // EBO: 索引缓冲对象(Element Buffer Object，EBO
     // Bind the Vertex Array Object first, then bind and set vertex buffer(s) and attribute pointer(s).
     glBindVertexArray(VAO);
 
@@ -111,6 +114,7 @@ int main() {
 
     glBindBuffer(GL_ARRAY_BUFFER, 0); // Note that this is allowed, the call to glVertexAttribPointer registered VBO as the currently bound vertex buffer object so afterwards we can safely unbind
 
+    // 为啥要解绑？ 因为数据已经上传了，而且后面不会再操作他了？
     glBindVertexArray(0); // Unbind VAO (it's always a good thing to unbind any buffer/array to prevent strange bugs), remember: do NOT unbind the EBO, keep it bound to this VAO
 
     
@@ -128,7 +132,16 @@ int main() {
         // Draw our first triangle
         glUseProgram(shaderProgram);
         glBindVertexArray(VAO);
-        //glDrawArrays(GL_TRIANGLES, 0, 6);
+//        glDrawArrays(GL_TRIANGLES, 0, 3);
+        
+        
+        /*
+         ### ✌️ 所以这里是指定了1的方式，连续用6个点来绘制2个三角形。element是指定对应的index
+         1.GL_TRIANGLES：每三个顶之间绘制三角形，之间不连接；
+         2.GL_TRIANGLE_FAN：以V0V1V2,V0V2V3,V0V3V4，……的形式绘制三角形；
+         3.GL_TRIANGLE_STRIP：顺序在每三个顶点之间均绘制三角形。这个方法可以保证从相同的方向上所有三角形均被绘制。以V0V1V2,V1V2V3,V2V3V4……的形式绘制三角形；
+         */
+        // 使用elment方法，画独立的三角形，使用6个点.
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
         glBindVertexArray(0);
         
