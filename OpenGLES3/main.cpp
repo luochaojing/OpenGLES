@@ -35,7 +35,7 @@ const GLchar* fragmentShaderSource = "#version 330 core\n"
 "out vec4 color;\n"
 "void main()\n"
 "{\n"
-"color = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
+"color = vec4(0.7f, 0.5f, 0.2f, 1.0f);\n"
 "}\n\0";
 
 
@@ -87,14 +87,20 @@ int main() {
     
     // 三维坐标，(x, y, z): 下面是一个长方形的四个角的坐标
     GLfloat vertices[] = {
-         0.5f,  0.5f, 0.0f,  // Top Right
-         0.5f, -0.5f, 0.0f,  // Bottom Right
-        -0.5f, -0.5f, 0.0f,  // Bottom Left
-        -0.5f,  0.5f, 0.0f   // Top Left
+        0.0f, 0.5f, 0.0f,
+        -1.0f, 0.5f, 0.0f,
+        -0.5f, 0.0f, 0.0f,
+        -0.5f, -0.5f, 0.0f,
+        0.0f, -0.5f, 0.0f,
+        0.5f, -0.5f, 0.0f,
+        0.5f, 0.0f, 0.0f,
+        0.5f, 0.5f, 0.0f,
     };
     GLuint indices[] = {  // Note that we start from 0! indices: 目录
-        0, 1, 3,  // First Triangle
-        1, 2, 3   // Second Triangle
+        0, 1, 2,
+        2, 3, 4,
+        4, 5, 6,
+        6, 7, 0,
     };
     GLuint VAO, VBO, EBO;
     glGenVertexArrays(1, &VAO); // VAO: vertex array obj
@@ -142,7 +148,8 @@ int main() {
          3.GL_TRIANGLE_STRIP：顺序在每三个顶点之间均绘制三角形。这个方法可以保证从相同的方向上所有三角形均被绘制。以V0V1V2,V1V2V3,V2V3V4……的形式绘制三角形；
          */
         // 使用elment方法，画独立的三角形，使用6个点.
-        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+        // 12: 因为要画4个三角形，所以是12个顶点。
+        glDrawElements(GL_TRIANGLES, 12, GL_UNSIGNED_INT, 0);
         glBindVertexArray(0);
         
         // Swap the screen buffers
