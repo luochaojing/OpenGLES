@@ -40,6 +40,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		BA22186123EF0380003649A7 /* wall.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = wall.jpg; sourceTree = "<group>"; };
+		BA22186223EF03E5003649A7 /* Shader1.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Shader1.h; sourceTree = "<group>"; };
 		BA839E7723E70600007087F7 /* OpenGLES3 */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = OpenGLES3; sourceTree = BUILT_PRODUCTS_DIR; };
 		BA839E7A23E70600007087F7 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		BA839E8223E70745007087F7 /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = System/Library/Frameworks/OpenGL.framework; sourceTree = SDKROOT; };
@@ -82,8 +84,10 @@
 		BA839E7923E70600007087F7 /* OpenGLES3 */ = {
 			isa = PBXGroup;
 			children = (
+				BA22186123EF0380003649A7 /* wall.jpg */,
 				BA839E7A23E70600007087F7 /* main.cpp */,
 				BA839E8D23E710DA007087F7 /* Guides.h */,
+				BA22186223EF03E5003649A7 /* Shader1.h */,
 			);
 			path = OpenGLES3;
 			sourceTree = "<group>";
