@@ -15,12 +15,18 @@
 // GLFW
 #include <GLFW/glfw3.h>
 
+#include "SOIL.h"
+
 using namespace std;
 
 // Function prototypes
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode);
 
 GLFWwindow *createWindow();
+
+unsigned char* loadImage();
+
+
 // Window dimensions
 const GLuint WIDTH = 800, HEIGHT = 600;
 
@@ -41,6 +47,8 @@ const GLchar* fragmentShaderSource = "#version 330 core\n"
 
 // The MAIN function, from here we start the application and run the game loop
 int main() {
+    
+    loadImage();
     
     // 创建窗口
     GLFWwindow* window = createWindow();
@@ -223,4 +231,12 @@ GLFWwindow *createWindow() {
     glViewport(0, 0, width, height);
     
     return window;
+}
+
+// MARK: - load image
+
+unsigned char* loadImage() {
+    int wid, height;
+    unsigned char *image = SOIL_load_image("/Users/luochaojing/OpenGLES3/OpenGLES3/wall.jpg", &wid, &height, 0, SOIL_LOAD_RGB);
+    return image;
 }
