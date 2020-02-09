@@ -17,6 +17,8 @@
 
 #include "SOIL.h"
 
+#include "Shader1.h"
+
 using namespace std;
 
 // Function prototypes
@@ -24,7 +26,8 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 
 GLFWwindow *createWindow();
 
-unsigned char* loadImage();
+unsigned char* loadImage(int *wid, int *height);
+
 
 
 // Window dimensions
@@ -47,91 +50,43 @@ const GLchar* fragmentShaderSource = "#version 330 core\n"
 
 // The MAIN function, from here we start the application and run the game loop
 int main() {
-    
-    loadImage();
-    
+
     // 创建窗口
     GLFWwindow* window = createWindow();
-
-    // 创建一个顶点着色器，并返回一个句柄
-    GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
-    // (GLuint shader, GLsizei count, const GLchar *const* string, const GLint* length);
-    glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
-    glCompileShader(vertexShader);
-    // Check for compile time errors
-    GLint success;
-    GLchar infoLog[512];
-    glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
-    if (!success) {
-        glGetShaderInfoLog(vertexShader, 512, NULL, infoLog);
-        std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << infoLog << std::endl;
-    }
     
-    // Fragment shader
-    GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
-    glCompileShader(fragmentShader);
-    // Check for compile time errors
-    glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
-    if (!success) {
-        glGetShaderInfoLog(fragmentShader, 512, NULL, infoLog);
-        std::cout << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n" << infoLog << std::endl;
-    }
+    Shader ourShader("/Users/luochaojing/OpenGLES3/OpenGLES3/ShaderSource/shader.vs",
+                     "/Users/luochaojing/OpenGLES3/OpenGLES3/ShaderSource/shader.frag");
     
-    // Link shaders
-    GLuint shaderProgram = glCreateProgram();
-    glAttachShader(shaderProgram, vertexShader);
-    glAttachShader(shaderProgram, fragmentShader);
-    glLinkProgram(shaderProgram);
-    // Check for linking errors
-    glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
-    if (!success) {
-        glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);
-        std::cout << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n" << infoLog << std::endl;
-    }
-    // 链接之后，就可以删除了。应该是拷贝了一份？
-    glDeleteShader(vertexShader);
-    glDeleteShader(fragmentShader);
-    
-    // 三维坐标，(x, y, z): 下面是一个长方形的四个角的坐标
+    // Set up vertex data (and buffer(s)) and attribute pointers
     GLfloat vertices[] = {
-        0.0f, 0.5f, 0.0f,
-        -1.0f, 0.5f, 0.0f,
-        -0.5f, 0.0f, 0.0f,
-        -0.5f, -0.5f, 0.0f,
-        0.0f, -0.5f, 0.0f,
-        0.5f, -0.5f, 0.0f,
-        0.5f, 0.0f, 0.0f,
-        0.5f, 0.5f, 0.0f,
+        // Positions         // Colors
+        0.5f, -0.5f, 0.0f,   1.0f, 0.0f, 0.0f,  // Bottom Right
+       -0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f,  // Bottom Left
+        0.0f,  0.5f, 0.0f,   0.0f, 0.0f, 1.0f   // Top
     };
-    GLuint indices[] = {  // Note that we start from 0! indices: 目录
-        0, 1, 2,
-        2, 3, 4,
-        4, 5, 6,
-        6, 7, 0,
-    };
-    GLuint VAO, VBO, EBO;
+
+
+    
+    GLuint VAO, VBO;
     glGenVertexArrays(1, &VAO); // VAO: vertex array obj
     glGenBuffers(1, &VBO);      // VBO: vertex buffer obj
-    glGenBuffers(1, &EBO);      // EBO: 索引缓冲对象(Element Buffer Object，EBO
     // Bind the Vertex Array Object first, then bind and set vertex buffer(s) and attribute pointer(s).
     glBindVertexArray(VAO);
 
     glBindBuffer(GL_ARRAY_BUFFER, VBO); // VAO可以像顶点缓冲对象那样被绑定，任何随后的顶点属性调用都会储存在这个VAO中。直到VAO解绑
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
-
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
+    
+    // position
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (GLvoid*)(0));
     glEnableVertexAttribArray(0);
 
-    glBindBuffer(GL_ARRAY_BUFFER, 0); // Note that this is allowed, the call to glVertexAttribPointer registered VBO as the currently bound vertex buffer object so afterwards we can safely unbind
+    // color
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
+    glEnableVertexAttribArray(1);
 
     // 为啥要解绑？ 因为数据已经上传了，而且后面不会再操作他了？
     glBindVertexArray(0); // Unbind VAO (it's always a good thing to unbind any buffer/array to prevent strange bugs), remember: do NOT unbind the EBO, keep it bound to this VAO
 
-    
     // Game loop
     while (!glfwWindowShouldClose(window))
     {
@@ -143,9 +98,14 @@ int main() {
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
-        // Draw our first triangle
-        glUseProgram(shaderProgram);
+        ourShader.Use();
         glBindVertexArray(VAO);
+        glDrawArrays(GL_TRIANGLES, 0, 3);
+        glBindVertexArray(0);
+        
+        // Draw our first triangle
+//        glUseProgram(shaderProgram);
+//        glBindVertexArray(VAO);
 //        glDrawArrays(GL_TRIANGLES, 0, 3);
         
         
@@ -157,8 +117,7 @@ int main() {
          */
         // 使用elment方法，画独立的三角形，使用6个点.
         // 12: 因为要画4个三角形，所以是12个顶点。
-        glDrawElements(GL_TRIANGLES, 12, GL_UNSIGNED_INT, 0);
-        glBindVertexArray(0);
+//        glDrawElements(GL_TRIANGLES, 12, GL_UNSIGNED_INT, 0);
         
         // Swap the screen buffers
         glfwSwapBuffers(window);
@@ -167,7 +126,6 @@ int main() {
     // Properly de-allocate all resources once they've outlived their purpose
     glDeleteVertexArrays(1, &VAO);
     glDeleteBuffers(1, &VBO);
-    glDeleteBuffers(1, &EBO);
     
     // Terminate GLFW, clearing any resources allocated by GLFW.
     glfwTerminate();
@@ -235,8 +193,22 @@ GLFWwindow *createWindow() {
 
 // MARK: - load image
 
-unsigned char* loadImage() {
-    int wid, height;
-    unsigned char *image = SOIL_load_image("/Users/luochaojing/OpenGLES3/OpenGLES3/wall.jpg", &wid, &height, 0, SOIL_LOAD_RGB);
+unsigned char* loadImage(int *wid, int *height) {
+    int _w, _h;
+    unsigned char *image = SOIL_load_image("/Users/luochaojing/OpenGLES3/OpenGLES3/wall.jpg", &_w, &_h, 0, SOIL_LOAD_RGB);
+    *wid = _w;
+    *height = _h;
+    /*
+     // 生成图片问题
+     GLuint texture;
+     int imageWidth, imageHeight;
+     glGenTextures(1, &texture);
+     glBindTexture(GL_TEXTURE_2D, texture);
+     unsigned char *image = loadImage(&imageWidth, &imageHeight);
+     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, imageWidth, imageHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
+     SOIL_free_image_data(image);
+     glBindTexture(GL_TEXTURE_2D, 0);
+     */
+    
     return image;
 }
