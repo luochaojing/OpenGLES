@@ -86,20 +86,70 @@ int main() {
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
     
     // position
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid*)(0));
-    glEnableVertexAttribArray(0);
-
-    // color
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
-    glEnableVertexAttribArray(1);
+    // index0开始前3个
     
-    // texCoord
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid*)(6 * sizeof(GLfloat)));
-    glEnableVertexAttribArray(2);
+    {
+        // 表示是对顶点着色器上哪个in数据的设置。
+        // 为了设置 layout (location = 0) in vec3 position;
+        // 所以是0
+        auto locationInVectexToSet = 0;
+        
+        // 设置的顶点的类型有几个点
+        // layout (location = 0) in vec3 position;
+        // 因为是vec3，有三个点(x,y,z)，所以是三
+        auto countOfPointPerVectex = 3;
+        
+        // 顶点里是啥类型
+        // 0.5f, 0.0f 这样的，所以是float类型
+        auto typeOfInput = GL_FLOAT;
+        
+        // 是否被标准化，如果为true，那么会被归一化
+        auto isNeedNormalize = GL_FALSE;
+        
+        //步长: 它告诉我们在连续的顶点属性组之间的间隔
+        // xyz,rgb,_x_y,
+        // xyz,rgb,_x_y,
+        // 可以认为第一个xyz和第二个xyz之间的距离，隔着 xyz,rgb,_x_y 8个，所以是8
+        auto stride = 8 * sizeof(GLfloat);
+        
+        // 一组数据xyz,rgb,_x_y是8个，position信息在一组的偏移量，是从0开始的，所以是0
+        auto offset = 0;
+        
+        glVertexAttribPointer(locationInVectexToSet, countOfPointPerVectex, typeOfInput, isNeedNormalize, stride, (GLvoid*)(offset));
+        glEnableVertexAttribArray(locationInVectexToSet);
+    }
+    
+    {
+        // color: 同理上文
+        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
+        glEnableVertexAttribArray(1); // index = 1 ()
+    }
+
+    {
+        // texCoord: 同理上文
+        glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid*)(6 * sizeof(GLfloat)));
+        glEnableVertexAttribArray(2);
+    }
+
 
     // 为啥要解绑？ 因为数据已经上传了，而且后面不会再操作他了？
     glBindVertexArray(0); // Unbind VAO (it's always a good thing to unbind any buffer/array to prevent strange bugs), remember: do NOT unbind the EBO, keep it bound to this VAO
 
+    // 图片纹理是为什么不用指定uniformName，就可以关联到片段着色器上的ourTexture上呢❓
+    // ✌️ 其实是因为默认会激活这个问题，并且直接上传就能对应上唯一的uniform了？
+    // 如果是需要上传多个纹理，代码应该是这样的：
+    /*
+     // 激活一个纹理，然后绑定，然后通过glUniform1i设置对应名字的uniform，这样就可以设置多个纹理了
+     glActiveTexture(GL_TEXTURE0);
+     glBindTexture(GL_TEXTURE_2D, texture1);
+     glUniform1i(glGetUniformLocation(ourShader.Program, "ourTexture1"), 0);
+     
+     
+     glActiveTexture(GL_TEXTURE1);
+     glBindTexture(GL_TEXTURE_2D, texture2);
+     glUniform1i(glGetUniformLocation(ourShader.Program, "ourTexture2"), 1);
+     */
+    
     // 生成图片问题
     GLuint texture;
     glGenTextures(1, &texture);
@@ -125,9 +175,15 @@ int main() {
         // Check if any events have been activiated (key pressed, mouse moved etc.) and call corresponding response functions
         glfwPollEvents();
 
+        static float red = 0;
+        red++;
+        if (red > 100) {
+            red = 0;
+        }
+        
         // Render
         // Clear the colorbuffer
-        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+        glClearColor(red / 100.0, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
         glBindTexture(GL_TEXTURE_2D, texture);
@@ -218,9 +274,5 @@ unsigned char* loadImage(int *wid, int *height) {
     unsigned char *image = SOIL_load_image("/Users/luochaojing/OpenGLES3/OpenGLES3/wall.jpg", &_w, &_h, 0, SOIL_LOAD_RGB);
     *wid = _w;
     *height = _h;
-    /*
-
-     */
-    
     return image;
 }
